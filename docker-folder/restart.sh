@@ -1,1 +1,1 @@
-docker run -d --name hackathon_indigo hackathon-indigo:hackathon_indigo
+docker run -d --name CS8803-MM-indigo cs8803-mm:CS8803-MM-indigo

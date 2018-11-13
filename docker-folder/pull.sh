@@ -1,1 +1,1 @@
-docker pull mandyxie/hackathon-indigo
+docker pull mandyxie/cs8803-mm
