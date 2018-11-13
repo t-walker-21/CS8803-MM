@@ -1,8 +1,7 @@
 #!/bin/bash
-docker run -d --name hackathon_indigo -it \
+docker run -d --name CS8803-MM-indigo -it \
   --env="DISPLAY" \
-  --workdir="/root/catkin_ws" \
-  --volume="/home/$USER/CS8803-MM" \
+  --volume="/home/$USER/CS8803-MM:/root/CS803-MM" \
   --volume="/etc/group:/etc/group:ro" \
   --volume="/etc/passwd:/etc/passwd:ro" \
   --volume="/etc/shadow:/etc/shadow:ro" \
