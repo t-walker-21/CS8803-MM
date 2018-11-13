@@ -2,8 +2,7 @@
 docker run -d --name hackathon_indigo -it \
   --env="DISPLAY" \
   --workdir="/root/catkin_ws" \
-  --volume="/home/$USER/hackathon:/root/catkin_ws/src/hackathon:rw" \
-  --volume="/home/$USER/catkin_ws_arm:/root/catkin_ws_arm:rw" \
+  --volume="/home/$USER/CS8803-MM" \
   --volume="/etc/group:/etc/group:ro" \
   --volume="/etc/passwd:/etc/passwd:ro" \
   --volume="/etc/shadow:/etc/shadow:ro" \
