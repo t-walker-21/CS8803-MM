@@ -39,14 +39,15 @@ class image_converter:
    print (e)
 
   
-  depth_mask = cv2.inRange(cv_depth_image,0.01,1.2)
+  depth_mask = cv2.inRange(cv_depth_image,0.01,2)
   
   
   #cv2.waitKey(1)
   
   hsv_image = cv2.cvtColor(cv_rgb_image,cv2.COLOR_BGR2HSV)
   color_mask = cv2.inRange(hsv_image[:,:,1],245,255)
-  #cv2.imshow('image',color_mask)
+  cv2.imshow('image',color_mask)
+  
   mask = color_mask & depth_mask
 
   #t = self.tf_listener_.getLatestCommonTime("base_link","head_camera_link")
@@ -74,6 +75,8 @@ class image_converter:
 
   # Find the index of the largest contour
   for c in contours:
+   if cv2.contourArea(c) < 40:
+    continue
    x,y,w,h = cv2.boundingRect(c)
    cv2.rectangle(cv_rgb_image,(x,y),(x+w,y+h),(0,255,0),2)
    #print ((x + w/2),(y + h/2))
@@ -101,7 +104,7 @@ class image_converter:
    else:
 
     for loc in self.applesSeen:
-     if np.linalg.norm(np.array(apple_coordinate)-np.array(loc)) <= 0.08:
+     if np.linalg.norm(np.array(apple_coordinate)-np.array(loc)) <= 0.1:
       rare = False
     
     if rare:

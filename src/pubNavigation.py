@@ -20,6 +20,7 @@ from actionlib_msgs.msg import GoalStatus
 from geometry_msgs.msg import Pose, Point, Quaternion
 from tf.transformations import quaternion_from_euler
 
+
 def done_cb(status, result):
  pass
 
@@ -35,13 +36,17 @@ def main():
  goal = MoveBaseGoal()
  goal.target_pose.header.frame_id='map'
  goal.target_pose.header.stamp = rospy.Time.now()
- goal.target_pose.pose = Pose(Point(-0.6,2.43,0),Quaternion(0,0,0,1))
+ goal.target_pose.pose = Pose(Point(-0.57,2.75,0),Quaternion(0,0,0,1))
+ # goal.target_pose.pose = Pose(Point(0,0,0),Quaternion(0,0,1,1)) home position
  client = actionlib.SimpleActionClient('move_base',MoveBaseAction)
  wait = client.wait_for_server(rospy.Duration(5))
  
  if (wait):
   print ("succesfuly connected to action server")
   client.send_goal(goal,done_cb,active_cb,feedback_cb)
+  
+ else:
+  print ("failed to connect to action server")
 
  rospy.spin()
 
