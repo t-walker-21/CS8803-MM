@@ -1,0 +1,10 @@
+<launch>
+<include file="$(find fetch_navigation)/launch/fetch_nav.launch">
+<arg name="map_file" default="/home/tevon/catkin_ws/src/assignment2/map/orchard.yaml"/>
+
+</include>
+
+<node pkg="rviz" type="rviz" name="$(anon rviz)"
+args="-d $(find assignment2)/config/assignment2.rviz">
+</node>
+</launch>
