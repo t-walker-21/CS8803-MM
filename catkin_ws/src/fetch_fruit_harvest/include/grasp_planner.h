@@ -30,13 +30,13 @@
 
 // Author: Michael Ferguson
 
-#ifndef SIMPLE_GRASPING_SHAPE_GRASP_PLANNER_H
-#define SIMPLE_GRASPING_SHAPE_GRASP_PLANNER_H
+#ifndef FETCH_GRASPING_SHAPE_GRASP_PLANNER_H
+#define FETCH_GRASPING_SHAPE_GRASP_PLANNER_H
 
 #include <ros/ros.h>
 #include <grasping_msgs/GraspableObject.h>
 
-namespace simple_grasping
+namespace fetch_grasping
 {
 
 /**
@@ -112,6 +112,6 @@ private:
   std::vector<moveit_msgs::Grasp> grasps_;
 };
 
-}  // namespace simple_grasping
+}  // namespace fetch_grasping
 
-#endif  // SIMPLE_GRASPING_SHAPE_GRASP_PLANNER_H
+#endif  // FETCH_GRASPING_SHAPE_GRASP_PLANNER_H

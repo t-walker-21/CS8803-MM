@@ -32,11 +32,11 @@
 
 #include <Eigen/Eigen>
 #include <ros/ros.h>
-#include <simple_grasping/shape_grasp_planner.h>
+#include <grasp_planner.h>
 
 using shape_msgs::SolidPrimitive;
 
-namespace simple_grasping
+namespace fetch_grasping
 {
 
 moveit_msgs::GripperTranslation makeGripperTranslation(
@@ -247,7 +247,7 @@ int ShapeGraspPlanner::plan(const grasping_msgs::Object& object,
 
   // Setup object dimensions
   double x, y, z;
-  if (object.primitives[0].type == SolidPrimitive::BOX)
+  if (object.primitives[0].type == SolidPrimitive::BOX or object.primitives[0].type == SolidPrimitive::SPHERE)
   {
     x = object.primitives[0].dimensions[SolidPrimitive::BOX_X];
     y = object.primitives[0].dimensions[SolidPrimitive::BOX_Y];

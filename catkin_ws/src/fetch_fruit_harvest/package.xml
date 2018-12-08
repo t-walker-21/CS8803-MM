@@ -4,7 +4,7 @@
   <description>
     package for Fetch fruit havest.
   </description>
-  <maintainer email="name">name</maintainer>
+  <maintainer email="mandy.xie1993@gmail.com">Mandy Xie</maintainer>
   <license>BSD</license>
   <buildtool_depend>catkin</buildtool_depend>
 

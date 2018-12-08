@@ -31,7 +31,7 @@
 
 #include <ros/ros.h>
 #include <actionlib/server/simple_action_server.h>
-#include <simple_grasping/shape_grasp_planner.h>
+#include <grasp_planner.h>
 #include <grasping_msgs/GraspPlanningAction.h>
 
 class GraspPlannerNode
@@ -42,7 +42,7 @@ public:
   GraspPlannerNode(ros::NodeHandle n)
   {
     // Planner
-    planner_.reset(new simple_grasping::ShapeGraspPlanner(n));
+    planner_.reset(new fetch_grasping::ShapeGraspPlanner(n));
 
     // Action for grasp planning
     server_.reset(new server_t(n, "plan",
@@ -59,7 +59,7 @@ private:
     server_->setSucceeded(result);
   }
 
-  boost::shared_ptr<simple_grasping::ShapeGraspPlanner> planner_;
+  boost::shared_ptr<fetch_grasping::ShapeGraspPlanner> planner_;
   boost::shared_ptr<server_t> server_;
 };
 

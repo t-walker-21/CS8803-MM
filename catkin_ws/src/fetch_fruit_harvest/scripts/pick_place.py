@@ -42,9 +42,11 @@ from moveit_python.geometry import rotate_pose_msg_by_euler_angles
 from control_msgs.msg import FollowJointTrajectoryAction, FollowJointTrajectoryGoal
 from control_msgs.msg import PointHeadAction, PointHeadGoal
 from grasping_msgs.msg import FindGraspableObjectsAction, FindGraspableObjectsGoal
-from geometry_msgs.msg import PoseStamped
+from grasping_msgs.msg import GraspPlanningAction, GraspPlanningGoal, Object
+from geometry_msgs.msg import PoseStamped, Pose
+from shape_msgs.msg import SolidPrimitive
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
-from moveit_msgs.msg import PlaceLocation, MoveItErrorCodes
+from moveit_msgs.msg import PlaceLocation, MoveItErrorCodes, Grasp
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 # Move base using navigation stack
@@ -127,7 +129,58 @@ class GraspingClient(object):
         self.find_client = actionlib.SimpleActionClient(find_topic, FindGraspableObjectsAction)
         self.find_client.wait_for_server()
 
+        # #######################################################################
+        # # test fetch_grasp_planner_node/plan with pose subcriber
+        # # use fetch_grasp_planner_node/plan with fetch_grasp_planner_node/plan
+        # grasp_topic = "fetch_grasp_planner_node/plan"
+        # rospy.loginfo("Waiting for %s..." % grasp_topic)
+        # self.grasp_planner_client = actionlib.SimpleActionClient(grasp_topic, GraspPlanningAction)
+        # self.grasp_planner_client.wait_for_server()
+        # #######################################################################
+
+    #     #####################################################################
+    #     # test fetch_grasp_planner_node/plan with pose subcriber
+    #     rospy.Subscriber("perception/apple_pose", Pose, self.apple_pose_callback)
+    #     self.object = Object()
+    #     self.grasps = Grasp()
+
+    # def apple_pose_callback(self, message):
+    #     apple = SolidPrimitive()
+    #     apple.type = SolidPrimitive.SPHERE
+    #     apple.dimensions = 0.04
+    #     self.object.primitives = apple
+    #     self.object.primitive_poses = message
+    #     # add stamp and frame
+    #     self.object.header.stamp = rospy.Time.now()
+    #     self.object.header.frame_id = message.frame_id
+        
+    #     goal = GraspPlanningGoal()
+    #     goal.object = self.object
+    #     self.grasp_planner_client.send_goal(goal)
+    #     self.grasp_planner_client.wait_for_result(rospy.Duration(5.0))
+    #     grasp_planner_result = self.grasp_planner_client.get_result()
+    #     self.grasps = grasp_planner_result.grasps
+    #     ####################################################################
+
     def updateScene(self):
+        # ####################################################################
+        # # use fetch_grasp_planner_node/plan with fetch_grasp_planner_node/plan
+        # # find objects
+        # goal = FindGraspableObjectsGoal()
+        # goal.plan_grasps = False
+        # self.find_client.send_goal(goal)
+        # self.find_client.wait_for_result(rospy.Duration(5.0))
+        # find_result = self.find_client.get_result()
+
+        # for obj in find_result.objects:
+        #     goal = GraspPlanningGoal()
+        #     goal.object = obj.object
+        #     self.grasp_planner_client.send_goal(goal)
+        #     self.grasp_planner_client.wait_for_result(rospy.Duration(5.0))
+        #     grasp_planner_result = self.grasp_planner_client.get_result()
+        #     obj.grasps = grasp_planner_result.grasps
+        # ####################################################################
+
         # find objects
         goal = FindGraspableObjectsGoal()
         goal.plan_grasps = True
@@ -154,6 +207,8 @@ class GraspingClient(object):
                                          use_service = False)
             if obj.object.primitive_poses[0].position.x < 0.85:
                 objects.append([obj, obj.object.primitive_poses[0].position.z])
+            print("object ", idx, " frame_id = ", obj.object.header.frame_id)
+            print("object ", idx, " pose = ", obj.object.primitive_poses[0])
 
         for obj in find_result.support_surfaces:
             # extend surface to floor, and make wider since we have narrow field of view

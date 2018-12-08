@@ -10,6 +10,11 @@
     <rosparam command="load" file="$(find fetch_fruit_harvest)/config/simple_grasping.yaml" />
   </node>
 
+  <!-- Start grasp planning -->
+  <!--node name="fetch_grasp_planner_node" pkg="fetch_fruit_harvest" type="fetch_grasp_planner_node">
+    <rosparam command="load" file="$(find fetch_fruit_harvest)/config/simple_grasping.yaml" />
+  </node-->
+
   <!-- Drive to the table, pick stuff up -->
   <node name="demo" pkg="fetch_fruit_harvest" type="pick_place.py" output="screen" />
 
