@@ -1,0 +1,4 @@
+<launch>
+<node pkg="fetch_fruit_harvest" type="keyboard_teleop.py" name="fetch_teleop" output="screen">
+</node>
+</launch>
