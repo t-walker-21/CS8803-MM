@@ -43,6 +43,7 @@ from grasping_msgs.msg import GraspPlanningAction, GraspPlanningGoal, Object
 from geometry_msgs.msg import PoseStamped, Pose
 from shape_msgs.msg import SolidPrimitive
 from moveit_msgs.msg import PlaceLocation, MoveItErrorCodes, Grasp
+from std_msgs.msg import String
 
 # Tools for grasping
 class GraspingClient(object):
@@ -56,11 +57,14 @@ class GraspingClient(object):
         self.grasp_planner_client = actionlib.SimpleActionClient(grasp_topic, GraspPlanningAction)
         self.grasp_planner_client.wait_for_server()
         rospy.Subscriber("fetch_fruit_harvest/apple_pose", Pose, self.apple_pose_callback)
+        self.pub = rospy.Publisher("fetch_fruit_harvest/grasp_msg", String, queue_size=10)
         self.object = Object()
         self.grasps = Grasp()
         self.ready_for_grasp = False
         self.pick_place_finished = False
         self.first_time_grasp = True
+        self.scene.addBox("ground", 300, 300, 0.02, 0, 0, 0)
+        self.tuck()
 
     def apple_pose_callback(self, message):
         if self.pick_place_finished or self.first_time_grasp:
@@ -94,6 +98,7 @@ class GraspingClient(object):
         self.scene.waitForSync()
 
         # insert objects to scene
+        self.scene.addBox("ground", 300, 300, 0.02, 0, 0, 0)
         self.scene.addSolidPrimitive(self.object.name,
                                      self.object.primitives[0],
                                      self.object.primitive_poses[0],
@@ -170,16 +175,18 @@ if __name__ == "__main__":
 
     # Setup clients
     grasping_client = GraspingClient()
-    grasping_client.stow()
 
+    rate = rospy.Rate(0.1)
     apple_in_grapper = False
 
     while not rospy.is_shutdown():
         # Get apple to pick
         fail_ct = 0
+        failed = False
         if not grasping_client.ready_for_grasp:
             continue
 
+        grasping_client.stow()
         while not rospy.is_shutdown() and not apple_in_grapper:
             rospy.loginfo("Picking object...")
             grasping_client.updateScene()
@@ -191,6 +198,7 @@ if __name__ == "__main__":
             grasping_client.stow()
             if fail_ct > 15:
                 fail_ct = 0
+                failed = True
                 break
             fail_ct += 1
 
@@ -210,12 +218,21 @@ if __name__ == "__main__":
             grasping_client.stow()
             if fail_ct > 15:
                 fail_ct = 0
+                failed = True
                 break
             fail_ct += 1
 
         # Tuck the arm, lower the torso
-        grasping_client.intermediate_stow()
-        grasping_client.stow()
-        rospy.loginfo("Finished")
+        grasping_client.tuck()
+        if failed:
+            done_str = "Failed in grasping at %s" % rospy.get_time()
+            grasping_client.pub.publish(done_str)
+            rospy.loginfo("Failed")
+        else:
+            done_str = "Succeed in grasping at %s" % rospy.get_time()
+            grasping_client.pub.publish(done_str)
+            rospy.loginfo("Succeed")
+
         grasping_client.pick_place_finished = True
         grasping_client.ready_for_grasp = False
+        rate.sleep()
