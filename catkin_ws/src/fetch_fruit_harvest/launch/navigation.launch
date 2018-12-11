@@ -1,0 +1,14 @@
+<launch>
+<include file="$(find fetch_navigation)/launch/fetch_nav.launch">
+<arg name="map_file" default="$(find fetch_fruit_harvest)/maps/orchard.yaml"/>
+
+</include>
+
+<node pkg="rviz" type="rviz" name="$(anon rviz)">
+</node>
+<node pkg="fetch_fruit_harvest" type="detectApples.py" name="apple_detector">
+</node>
+
+<node pkg="fetch_fruit_harvest" type="sequence.py" name="full_sequence">
+</node>
+</launch>

@@ -1,0 +1,41 @@
+{
+    "configurations": [
+        {
+            "browse": {
+                "databaseFilename": "",
+                "limitSymbolsToIncludedHeaders": true
+            },
+            "includePath": [
+                "/home/student/catkin_ws/devel/include",
+                "/opt/ros/melodic/include",
+                "/home/student/catkin_ws/src/navigation-melodic-devel/amcl/include",
+                "/home/student/catkin_ws/src/navigation-melodic-devel/base_local_planner/include",
+                "/home/student/catkin_ws/src/navigation-melodic-devel/carrot_planner/include",
+                "/home/student/catkin_ws/src/navigation-melodic-devel/clear_costmap_recovery/include",
+                "/home/student/catkin_ws/src/navigation-melodic-devel/costmap_2d/include",
+                "/home/student/catkin_ws/src/navigation-melodic-devel/dwa_local_planner/include",
+                "/home/student/catkin_ws/src/fetch_ros/fetch_depth_layer/include",
+                "/home/student/catkin_ws/src/fetch_fruit_harvest/include",
+                "/home/student/catkin_ws/src/fetch_ros/fetch_ikfast_plugin/include",
+                "/home/student/catkin_ws/src/navigation-melodic-devel/global_planner/include",
+                "/home/student/catkin_ws/src/navigation-melodic-devel/map_server/include",
+                "/home/student/catkin_ws/src/navigation-melodic-devel/move_base/include",
+                "/home/student/catkin_ws/src/navigation-melodic-devel/move_slow_and_clear/include",
+                "/home/student/catkin_ws/src/navigation-melodic-devel/nav_core/include",
+                "/home/student/catkin_ws/src/navigation-melodic-devel/navfn/include",
+                "/home/student/catkin_ws/src/robot_controllers/include",
+                "/home/student/catkin_ws/src/robot_controllers_interface/include",
+                "/home/student/catkin_ws/src/navigation-melodic-devel/rotate_recovery/include",
+                "/home/student/catkin_ws/src/tf2_sensor_msgs/include",
+                "/home/student/catkin_ws/src/navigation-melodic-devel/voxel_grid/include",
+                "/usr/include"
+            ],
+            "name": "Linux",
+            "intelliSenseMode": "gcc-x64",
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c11",
+            "cppStandard": "c++17"
+        }
+    ],
+    "version": 4
+}
