@@ -130,7 +130,7 @@ def main():
  head_goal.target.point.y = -1.6
  head_goal.target.point.z = 1
  ##look right
- head_wait = head_point_client.wait_for_server()
+ head_wait = head_point_client.wait_for_server(rospy.Duration(5))
 
  count = 0
 
@@ -206,8 +206,9 @@ def main():
     head_goal.target.point.z = z
     head_point_client.send_goal(head_goal)
     head_point_client.wait_for_result()
+    
 
-    for apple in group:
+    """for apple in group:
 
 
       now = rospy.Time(0)
@@ -231,7 +232,7 @@ def main():
       while not rospy.is_shutdown():
         applePosePub.publish(apple_pose)
         print("pub apple pose")
-        rate.sleep()
+        rate.sleep()"""
 
 
     time.sleep(5)

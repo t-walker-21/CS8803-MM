@@ -55,7 +55,12 @@ class GraspingClient(object):
         grasp_topic = "fetch_grasp_planner_node/plan"
         rospy.loginfo("Waiting for %s..." % grasp_topic)
         self.grasp_planner_client = actionlib.SimpleActionClient(grasp_topic, GraspPlanningAction)
-        self.grasp_planner_client.wait_for_server()
+        wait = self.grasp_planner_client.wait_for_server(rospy.Duration(5))
+        if (wait):
+            print("successfully connected to grasp server")
+        else:
+            print("failed to connect to grasp server")
+
         rospy.Subscriber("fetch_fruit_harvest/apple_pose", Pose, self.apple_pose_callback)
         self.pub = rospy.Publisher("fetch_fruit_harvest/grasp_msg", String, queue_size=10)
         self.object = Object()
@@ -101,8 +106,7 @@ class GraspingClient(object):
         self.scene.addBox("ground", 300, 300, 0.02, 0, 0, 0)
         self.scene.addSolidPrimitive(self.object.name,
                                      self.object.primitives[0],
-                                     self.object.primitive_poses[0],
-                                     use_service = False)
+                                     self.object.primitive_poses[0])
         self.scene.waitForSync()
 
     def getPlaceLocation(self):
@@ -167,7 +171,7 @@ class GraspingClient(object):
         
 if __name__ == "__main__":
     # Create a node
-    rospy.init_node("demo")
+    rospy.init_node("apple_manipulator")
 
     # Make sure sim time is working
     while not rospy.Time.now():

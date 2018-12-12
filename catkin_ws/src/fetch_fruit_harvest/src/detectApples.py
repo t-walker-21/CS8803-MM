@@ -2,7 +2,7 @@
 
 from __future__ import print_function
 
-import roslib
+import roslib;
 import rospy
 import cv2
 from std_msgs.msg import String
@@ -13,11 +13,13 @@ import message_filters
 from tf import TransformListener
 import tf
 import geometry_msgs
-from geometry_msgs.msg import Pose
 from rospy.numpy_msg import numpy_msg
 from rospy_tutorials.msg import Floats
+from geometry_msgs.msg import PoseStamped, Pose
+
 
 class image_converter:
+ 
 
  def __init__(self):
   self.rgb_image_sub = message_filters.Subscriber('/head_camera/rgb/image_raw/',Image)
@@ -25,7 +27,9 @@ class image_converter:
 
   self.ts = message_filters.TimeSynchronizer([self.rgb_image_sub,self.depth_image_sub],10)
   self.ts.registerCallback(self.callback)
-  self.apple_pub = rospy.Publisher("/apple_loc",numpy_msg(Floats), queue_size=10)
+  #self.image_pub = rospy.Publisher("/thresholded_image",Image)
+  self.locPub = rospy.Publisher("/apple_loc",numpy_msg(Floats),queue_size=10)
+  self.baseLocPub = rospy.Publisher("/fetch_fruit_harvest/apple_pose",Pose,queue_size=10)
   self.bridge = CvBridge()
   self.applesSeen = []
   self.tf_listener_ = TransformListener()
@@ -33,6 +37,7 @@ class image_converter:
   #self.image_sub = rospy.Subscriber("/head_camera/rgb/image_raw",Image,self.callback)
 
  def callback(self,RGBdata,depthData):
+  DIST_THRESH = 0.2
   
   try:
    cv_rgb_image = self.bridge.imgmsg_to_cv2(RGBdata,"bgr8")
@@ -49,7 +54,7 @@ class image_converter:
   
   hsv_image = cv2.cvtColor(cv_rgb_image,cv2.COLOR_BGR2HSV)
   color_mask = cv2.inRange(hsv_image[:,:,1],245,255)
-  cv2.imshow('image',color_mask)
+  #cv2.imshow('image',color_mask)
   
   mask = color_mask & depth_mask
 
@@ -60,8 +65,8 @@ class image_converter:
   #pBase = self.tf_listener_.transformPose("head_camera_link",p1)
   
   now = rospy.Time(0)
-  self.tf_listener_.waitForTransform("map", "head_camera_link", now, rospy.Duration(4.0)) 
-  trans = self.tf_listener_.lookupTransform("map","head_camera_link",now)  
+  self.tf_listener_.waitForTransform("base_link", "head_camera_link", now, rospy.Duration(4.0)) 
+  trans = self.tf_listener_.lookupTransform("base_link","head_camera_link",now)  
 
   ##better method
  
@@ -70,15 +75,16 @@ class image_converter:
   
   ##better method
 
-
+  
+  
 
   #print ("pose: ",trans[0])
 
-  _, contours, hierarchy = cv2.findContours(mask,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+  contours, hierarchy = cv2.findContours(mask,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
 
   # Find the index of the largest contour
   for c in contours:
-   if cv2.contourArea(c) < 40:
+   if cv2.contourArea(c) < 60:
     continue
    x,y,w,h = cv2.boundingRect(c)
    cv2.rectangle(cv_rgb_image,(x,y),(x+w,y+h),(0,255,0),2)
@@ -86,7 +92,7 @@ class image_converter:
    apple_center_depth = cv_depth_image[y+h/2][x+w/2] #+ 0.158
    #print (apple_center_depth)
      
-   z_coord = apple_center_depth
+   z_coord = apple_center_depth + 0.005 #FOR BIGGER APPLES
    x_coord = -1*(apple_center_depth/554.0)*(x-320 + w/2)
    y_coord = (apple_center_depth/554.0)*(-1*(y-240) + h/2)
 
@@ -99,24 +105,50 @@ class image_converter:
    #apple_coordinate = apple_coordinate - np.array(trans[0])
    #print ("appleWC: ",apple_coordinate)
    rare = True
-   if len(self.applesSeen) == 0:
+  
+
+
+   if len(self.applesSeen) == 0: # == 0 fix this
     self.applesSeen.append(apple_coordinate)
     print ("new apple added")
     print (apple_coordinate)
-    self.apple_pub.publish(apple_coordinate)
-
+    a = apple_coordinate[:3]
+    a = np.array(a,dtype=np.float32)
+    self.locPub.publish(a)
+    apple_pose = Pose()
+    apple_pose.orientation.x = 0
+    apple_pose.orientation.y = 0
+    apple_pose.orientation.z = 0
+    apple_pose.orientation.w = 1
+    apple_pose.position.x = a[0] + 0
+    apple_pose.position.y = a[1]
+    apple_pose.position.z = a[2]
+    self.baseLocPub.publish(apple_pose)
+    exit()
    else:
 
     for loc in self.applesSeen:
-     if np.linalg.norm(np.array(apple_coordinate)-np.array(loc)) <= 0.1:
+     if np.linalg.norm(np.array(apple_coordinate)-np.array(loc)) <= DIST_THRESH:
       rare = False
     
     if rare:
      self.applesSeen.append(apple_coordinate)
      print ("new apple added")
      print (apple_coordinate)
-     self.apple_pub.publish(apple_coordinate)
-   
+     a = apple_coordinate[:3]
+     a = np.array(a,dtype=np.float32)
+     self.locPub.publish(a)
+     apple_pose = Pose()
+     apple_pose.orientation.x = 0
+     apple_pose.orientation.y = 0
+     apple_pose.orientation.z = 0
+     apple_pose.orientation.w = 1
+     apple_pose.position.x = a[0]
+     apple_pose.position.y = a[1]
+     apple_pose.position.z = a[2]
+     #print (apple_pose)
+     self.baseLocPub.publish(apple_pose)
+     
      cv2.circle(cv_rgb_image,((x + w/2),(y + h/2)),5,(0,0,0),3,8,0)
 
     else:
@@ -125,7 +157,7 @@ class image_converter:
   cv2.imshow("rosIm",cv_rgb_image)
 
   cv2.waitKey(1)
-
+  
 
 
 def main():
@@ -141,4 +173,3 @@ if __name__=="__main__":
  main()
 
 	
-
