@@ -23,6 +23,7 @@ from geometry_msgs.msg import Pose, Point, Quaternion
 from tf.transformations import quaternion_from_euler
 from rospy.numpy_msg import numpy_msg
 from rospy_tutorials.msg import Floats
+from std_msgs.msg import Int8
 
 global apples
 apples = []
@@ -103,6 +104,7 @@ def feedback_cb(feedback):
 
 def apple_seen_cb(data):
  print ("new apple seen")
+ print (data)
  global apples
  apples.append([data.data[0],data.data[1],data.data[2]])
 
@@ -112,14 +114,15 @@ def main():
 
  
  tf_listener_ = TransformListener()
- tx = tf.Transformer(True,rospy.Duration(10.))
- applePosePub = rospy.Publisher("fetch_fruit_harvest/apple_pose", Pose, queue_size=10)
+ baseLocPub = rospy.Publisher("/fetch_fruit_harvest/apple_pose",Pose,queue_size=10)
+ 
  sub = rospy.Subscriber("/apple_loc",numpy_msg(Floats),apple_seen_cb)
  goal = MoveBaseGoal()
  goal.target_pose.header.frame_id='map'
  move_base_client = actionlib.SimpleActionClient('move_base',MoveBaseAction)
  wait = move_base_client.wait_for_server(rospy.Duration(5))
  global apples
+ enablePub = rospy.Publisher("/enableVision",Int8,queue_size=10)
 
  head_point_client = actionlib.SimpleActionClient('head_controller/point_head',PointHeadAction)
  head_goal = PointHeadGoal()
@@ -136,68 +139,72 @@ def main():
 
  if (wait and head_wait):
   print ("succesfuly connected to action servers")
-  while True:
-   print ("count",count)
-   #move fetch to start of orchard row
-   goal.target_pose.header.stamp = rospy.Time.now()
-   goal.target_pose.pose = Pose(Point(-1,0,0),Quaternion(0,0,1,1)) #row start position
-   move_base_client.send_goal(goal,done_cb,active_cb,feedback_cb)
-   move_base_client.wait_for_result()
-   print ("reached row start")
-   #make fetch look to the right
-   head_goal.target.header.stamp = rospy.Time.now()
-   head_goal.target.header.frame_id = "base_link"
-   head_goal.target.point.x = 0.3
-   head_goal.target.point.y = -1.6
-   head_goal.target.point.z = 0.8
-   head_point_client.send_goal(head_goal)
-   head_point_client.wait_for_result()
-   print ("head turned right")
-   #move fetch to end of orchard row
-   goal.target_pose.header.stamp = rospy.Time.now()
-   goal.target_pose.pose = Pose(Point(-1,9,0),Quaternion(0,0,1,1)) #row end position
-   move_base_client.send_goal(goal,done_cb,active_cb,feedback_cb)
-   move_base_client.wait_for_result()
-   print ("reached row end")
-   #make fetch look forward
-   head_goal.target.header.stamp = rospy.Time.now()
-   head_goal.target.header.frame_id = "base_link"
-   head_goal.target.point.x = 1
-   head_goal.target.point.y = 0
-   head_goal.target.point.z = 1
-   head_point_client.send_goal(head_goal)
-   head_point_client.wait_for_result()
-   print ("head turned forward")
-   #move fetch to start of orchard row
-   goal.target_pose.header.stamp = rospy.Time.now()
-   goal.target_pose.pose = Pose(Point(-1,0,0),Quaternion(0,0,1,1)) #row start position
-   move_base_client.send_goal(goal,done_cb,active_cb,feedback_cb)
-   move_base_client.wait_for_result()
-   print ("reached row start")
-   #goal.target_pose.pose = Pose(Point(-0.501,3.31,0),Quaternion(0,0,0,1))
-   count += 1 
-   print ("I saw a total of: ", len(apples), " apples")
-   goalGroups = find_groups(apples)
-   #go to each group of apples
-   gCount = 0
-   for group in goalGroups:
+  
+  print ("count",count)
+  #move fetch to start of orchard row
+  goal.target_pose.header.stamp = rospy.Time.now()
+  goal.target_pose.pose = Pose(Point(-1,-1,0),Quaternion(0,0,1,1)) #row start position
+  move_base_client.send_goal(goal,done_cb,active_cb,feedback_cb)
+  move_base_client.wait_for_result()
+  print ("reached row start")
+  #make fetch look to the right and enable vision
+  head_goal.target.header.stamp = rospy.Time.now()
+  head_goal.target.header.frame_id = "base_link"
+  head_goal.target.point.x = 0.3
+  head_goal.target.point.y = -1.6
+  head_goal.target.point.z = 0.8
+  head_point_client.send_goal(head_goal)
+  head_point_client.wait_for_result()
+  enablePub.publish(1)
+  print ("head turned right and vision enabled")
+  #move fetch to end of orchard row
+  goal.target_pose.header.stamp = rospy.Time.now()
+  goal.target_pose.pose = Pose(Point(-1,9,0),Quaternion(0,0,1,1)) #row end position
+  move_base_client.send_goal(goal,done_cb,active_cb,feedback_cb)
+  move_base_client.wait_for_result()
+  print ("reached row end")
+  #make fetch look forward and disable vision
+  head_goal.target.header.stamp = rospy.Time.now()
+  head_goal.target.header.frame_id = "base_link"
+  head_goal.target.point.x = 1
+  head_goal.target.point.y = 0
+  head_goal.target.point.z = 1
+  head_point_client.send_goal(head_goal)
+  head_point_client.wait_for_result()
+  enablePub.publish(0)
+  print ("head turned forward and vision disabled")
+  #move fetch to start of orchard row
+  goal.target_pose.header.stamp = rospy.Time.now()
+  goal.target_pose.pose = Pose(Point(-1,-1,0),Quaternion(0,0,1,1)) #row start position
+  move_base_client.send_goal(goal,done_cb,active_cb,feedback_cb)
+  move_base_client.wait_for_result()
+  print ("reached row start")
+  #goal.target_pose.pose = Pose(Point(-0.501,3.31,0),Quaternion(0,0,0,1))
+  count += 1 
+  print ("I saw a total of: ", len(apples), " apples")
+  #goalGroups = find_groups(apples)
+  #go to each group of apples
+  gCount = 0
+  for group in apples:
     print ("going to appleGroup: " + str(gCount))
     #print (group[0])
-    x = 0; y = 0; z = 0
-    ptCt = 0
+    x = group[0]; y = group[1]; z = group[2]
+    """ptCt = 0
     for point in group:
-     x += point[0]; y += point[1]; z += point[2]
-     ptCt += 1
-  
+      x += point[0]; y += point[1]; z += point[2]
+      ptCt += 1
+
     x /= ptCt
     y /= ptCt
-    z /= ptCt
+    z /= ptCt"""
 
     goal.target_pose.header.stamp = rospy.Time.now()
-    goal.target_pose.pose = Pose(Point(x-APPROACH_THRESH,y,0),Quaternion(0,0,0,1)) #row end position
+    goal.target_pose.pose = Pose(Point(x-APPROACH_THRESH,y-0.2,0),Quaternion(0,0,0,1)) #apple position
     move_base_client.send_goal(goal,done_cb,active_cb,feedback_cb)
     move_base_client.wait_for_result()
     print ("reached apple goal")
+
+
     gCount += 1
     head_goal.target.header.stamp = rospy.Time.now()
     head_goal.target.header.frame_id = "map"
@@ -206,6 +213,53 @@ def main():
     head_goal.target.point.z = z
     head_point_client.send_goal(head_goal)
     head_point_client.wait_for_result()
+
+
+
+    #detect apple in base_link frame
+
+    
+    enablePub.publish(2)
+    time.sleep(3)
+    temp = apples.pop()
+    enablePub.publish(0)
+
+
+
+    
+    #tf_listener_ = TransformListener()
+
+    #now = rospy.Time(0)
+    #tf_listener_.waitForTransform("base_link", "map", now, rospy.Duration(4.0)) 
+    #trans = tf_listener_.lookupTransform("base_link","map",now)
+
+    """
+    txformer = tf.TransformerROS()
+    mat = txformer.fromTranslationRotation(trans[0],trans[1])
+
+    mapCoordinate = np.array([x,y,z,1])
+    baseCoordinate = np.dot(mat,mapCoordinate)"""
+
+    print ("The apple in Base_link frame is: " + str(temp))
+
+
+    #grasp apple
+
+    apple_pose = Pose()
+    apple_pose.orientation.x = 0
+    apple_pose.orientation.y = 0
+    apple_pose.orientation.z = 0
+    apple_pose.orientation.w = 1
+    apple_pose.position.x = temp[0]
+    apple_pose.position.y = temp[1]
+    apple_pose.position.z = temp[2]
+    baseLocPub.publish(apple_pose)
+
+
+
+    time.sleep(50)
+
+    
     
 
     """for apple in group:
@@ -235,7 +289,7 @@ def main():
         rate.sleep()"""
 
 
-    time.sleep(5)
+  
 
 
 

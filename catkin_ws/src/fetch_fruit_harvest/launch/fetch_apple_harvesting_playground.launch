@@ -14,7 +14,7 @@
     <arg name="paused" value="false"/>
     <arg name="use_sim_time" value="true"/>
     <arg name="headless" value="$(arg headless)"/>
-    <arg name="world_name" value="$(find fetch_fruit_harvest)/worlds/field1.sdf"/>
+    <arg name="world_name" value="$(find fetch_fruit_harvest)/worlds/field.sdf"/>
     <!-- <arg name="world_name" value="$(find fetch_fruit_harvest)/worlds/float_apple_pick_place.sdf"/> -->
   </include>
 
